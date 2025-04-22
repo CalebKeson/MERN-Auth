@@ -1,0 +1,26 @@
+{
+  "name": "react-tailwind",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --env-file=.env backend/index.js",
+    "dev": "node --trace-warnings --watch --env-file=.env backend/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CalebKeson/MERN-Auth.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CalebKeson/MERN-Auth/issues"
+  },
+  "homepage": "https://github.com/CalebKeson/MERN-Auth#readme",
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongoose": "^8.13.2"
+  }
+}

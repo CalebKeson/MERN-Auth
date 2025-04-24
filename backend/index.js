@@ -1,6 +1,8 @@
 import express from "express";
 import mongoose from "mongoose";
 import authRoutes from "./routes/user.route.js";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
 // create an express app
 const app = express();
@@ -14,6 +16,18 @@ mongoose
   .catch((error) => {
     console.log("Error connecting to MongoDB:", error.message);
   });
+
+// inform the app to use JSON
+app.use(express.json());
+
+// inform the app to use urlencoded data
+app.use(express.urlencoded({ extended: true }));
+
+// inform the app to use cors
+app.use(cors())
+
+// inform the app to use cookie-parser
+app.use(cookieParser())
 
 // listen to server on port 3000
 app.listen(process.env.PORT, () => {

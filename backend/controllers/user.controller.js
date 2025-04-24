@@ -1,22 +1,25 @@
 import { signupSchema } from "../middleware/validation.js";
 import { doHash } from "../utils/hashing.js";
 import User from "../models/user.model.js";
+import { errorHandler } from "../utils/error.js";
 export const test = (req, res) => {
   res.json({ message: "Welcome to MERN Authentication API!!" });
 };
 
-export const signup = async (req, res) => {
+export const signup = async (req, res, next) => {
   // signup logic
   const { username, email, password } = req.body; // destructure the request body
   try {
     // validate the request body using Joi
-    const { error, value } = signupSchema.validate({username, email, password});
+    const { error, value } = signupSchema.validate({
+      username,
+      email,
+      password,
+    });
 
     // validate the request body
     if (error) {
-      res
-        .status(401)
-        .json({ success: false, message: error.details[0].message });
+      next(errorHandler(401, error.details[0].message));
     }
 
     // check if user already exists
@@ -24,7 +27,7 @@ export const signup = async (req, res) => {
 
     // if user exists, send a response
     if (existingUser) {
-      res.status(401).json({ success: false, message: "User already exists!" });
+      next(errorHandler(401, "User already exists!"));
     }
 
     // hash the password
@@ -49,6 +52,6 @@ export const signup = async (req, res) => {
       .json({ success: true, message: "User created successfully!", result });
   } catch (error) {
     // handle errors
-    res.status(500).json({ success: false, message: error.message });
+    next(error);
   }
 };

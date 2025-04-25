@@ -1,6 +1,6 @@
 import express from "express";
 import mongoose from "mongoose";
-import authRoutes from "./routes/user.route.js";
+import authRoutes from "./routes/user.route.js"; 
 import cors from "cors";
 import cookieParser from "cookie-parser";
 

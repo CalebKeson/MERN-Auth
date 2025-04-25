@@ -4,7 +4,7 @@ import authRoutes from "./routes/user.route.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-// create an express app
+// create an express app 
 const app = express();
 
 // connect to mongodb

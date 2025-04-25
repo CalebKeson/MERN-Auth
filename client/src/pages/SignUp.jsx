@@ -1,14 +1,12 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Signup = () => {
-  const [formdata, setFormdata] = useState({
-    username: "",
-    email: "",
-    password: "",
-  });
+  const [formdata, setFormdata] = useState({});
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormdata({ ...formdata, [e.target.name]: e.target.value });
@@ -32,13 +30,14 @@ const Signup = () => {
         setError("Something went wrong. Please try again.");
         return;
       }
+      navigate("/sign-in");
       
     } catch (error) {
       setLoading(false);
       setError("Something went wrong. Please try again later.");
     }
 
-    setFormdata({ formdata });
+    // setFormdata({});
   };
   return (
     <div className="max-w-lg mx-auto p-8">

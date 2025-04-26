@@ -33,7 +33,7 @@ const Signup = () => {
       navigate("/");
     } catch (error) {
       setLoading(false);
-      setError("Something went wrong. Please try again later.");
+      setError(error.message);
     }
 
     // setFormdata({});

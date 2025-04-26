@@ -127,3 +127,16 @@ export const signin = async (req, res, next) => {
     next(error);
   }
 };
+
+export const signout = async (req, res, next) => {
+  // signout logic
+  try {
+    // clear the cookie
+    return res
+      .clearCookie("Authorization")
+      .json({ success: true, message: "User logged out successfully!" });
+  } catch (error) {
+    // handle errors
+    next(error);
+  }
+}; 

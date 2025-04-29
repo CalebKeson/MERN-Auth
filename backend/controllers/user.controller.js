@@ -1,4 +1,10 @@
-import { signupSchema, signinSchema, verifyVerificationCodeSchema } from "../middleware/validation.js";
+import {
+  signupSchema,
+  signinSchema,
+  verifyVerificationCodeSchema,
+  forgotPasswordCodeSchema,
+  changePasswordSchema,
+} from "../middleware/validation.js";
 import { doHash, compareHash, hmacProcess } from "../utils/hashing.js";
 import transport from "../middleware/sendMail.js";
 import User from "../models/user.model.js";
@@ -280,14 +286,187 @@ export const verifyCode = async (req, res, next) => {
   }
 };
 
-export const forgotPassword = async (req, res, next) => {
+export const forgotPasswordCode = async (req, res, next) => {
   const { email } = req.body; // destructure the request body
-  
+
   // forgot password logic
   try {
+    // check if user exists
+    const existingUser = await User.findOne({ email });
 
-  }catch (error) {
+    // if user does not exist, send a response
+    if (!existingUser) {
+      return next(errorHandler(404, "User does not exist!"));
+    }
+    // generate a verification code
+    const verificationCode = Math.floor(Math.random() * 1000000).toString(); // 6 digit code
+
+    // send the verification code to the user's email
+    const mailOptions = {
+      from: process.env.NODE_CODE_SENDING_EMAIL_ADDRESS,
+      to: existingUser.email,
+      subject: "Forgot Password Code",
+      html: `<h2>Your forgot password code is ${verificationCode}</h2>`,
+    };
+
+    // send the email
+    const info = await transport.sendMail(mailOptions);
+
+    // check if email was sent successfully
+    if (!info) {
+      return next(errorHandler(401, "Failed to send verification code!"));
+    }
+
+    // save the verification code to the user's document
+    if (info.accepted[0] === existingUser.email) {
+      const hashedVerificationCode = hmacProcess(
+        verificationCode,
+        process.env.HMAC_VERIFICATION_CODE_SECRET
+      );
+      // save the hashed verification code to the user's document
+      existingUser.forgotPasswordCode = hashedVerificationCode;
+      existingUser.forgotPasswordCodeValidation = Date.now();
+      await existingUser.save();
+    }
+
+    // send a response
+    return res.status(200).json({
+      success: true,
+      message: "Forgot password code sent successfully!",
+    });
+  } catch (error) {
     // handle errors
-    next(error)
+    next(error);
+  }
+};
+
+export const verifyForgotPasswordCode = async (req, res, next) => {
+  const { email, verificationCode, newPassword } = req.body;
+
+  try {
+    // validate the request body using Joi
+    const { error, value } = forgotPasswordCodeSchema.validate({
+      email,
+      verificationCode,
+      newPassword,
+    });
+
+    // validate the request body
+    if (error) {
+      return next(errorHandler(401, error.details[0].message));
+    }
+
+    // find the user by email
+    const existingUser = await User.findOne({ email }).select(
+      "+forgotPasswordCode +forgotPasswordCodeValidation"
+    );
+
+    // if user does not exist, send a response
+    if (!existingUser) {
+      return next(errorHandler(404, "User does not exist!"));
+    }
+
+    // check if verification code is already sent
+    if (
+      !existingUser.forgotPasswordCode ||
+      !existingUser.forgotPasswordCodeValidation
+    ) {
+      return next(errorHandler(401, "Forgot password code not sent!"));
+    }
+
+    // check if verification code is correct
+    const hashedVerificationCode = hmacProcess(
+      verificationCode.toString(),
+      process.env.HMAC_VERIFICATION_CODE_SECRET
+    );
+
+    // check if verification code is expired
+    const currentTime = Date.now();
+    const verificationCodeValidationTime =
+      existingUser.verificationCodeValidation;
+    const timeDiff = currentTime - verificationCodeValidationTime;
+    const timeDiffInMinutes = Math.floor(timeDiff / (1000 * 60)); // convert to minutes
+
+    // if verification code is expired, send a response
+    if (timeDiffInMinutes > 5) {
+      // 5 minutes expiration time
+      return next(errorHandler(400, "Verification code expired!"));
+    }
+
+    if (hashedVerificationCode !== existingUser.forgotPasswordCode) {
+      return next(errorHandler(401, "Invalid forgot password code!"));
+    }
+
+    // update the user's document to set isVerified to true and clear the verification code
+    existingUser.password = doHash(newPassword, 10);
+    existingUser.forgotPasswordCode = undefined;
+    existingUser.forgotPasswordCodeValidation = undefined;
+
+    await existingUser.save();
+
+    // send a response
+    return res.status(200).json({
+      success: true,
+      message: "Password updated successfully!",
+    });
+  } catch (error) {
+    // handle errors
+    next(error);
+  }
+};
+
+export const changePassword = async ( req, res, next ) => {
+  const { oldPassword, newPassword } = req.body
+  const { isVerified, id } = req.user // destructure the request body
+
+  try {
+    // validate the request body using Joi
+    const { error, value } = changePasswordSchema.validate({
+      oldPassword,
+      newPassword,
+    });
+
+    // validate the request body
+    if (error) {
+      return next(errorHandler(401, error.details[0].message));
+    }
+
+    // check if user is verified
+    if (!isVerified) {
+      return next(errorHandler(401, "User is not verified!"));
+    }
+    // check if user exists
+    const existingUser = await User.findById(id).select("+password");
+
+    // if user does not exist, send a response
+    if (!existingUser) {
+      return next(errorHandler(404, "User does not exist!"));
+    }
+
+    // check if password is correct
+    const isMatch = compareHash(oldPassword, existingUser.password);
+
+    // if password is incorrect, send a response
+    if (!isMatch) {
+      return next(errorHandler(401, "Invalid credentials!"));
+    }
+
+    // hash the new password
+    const hashedPassword = doHash(newPassword, 10);
+
+    // update the user's document to set isVerified to true and clear the verification code
+    existingUser.password = hashedPassword;
+
+    await existingUser.save();
+
+    // send a response
+    return res.status(200).json({
+      success: true,
+      message: "Password updated successfully!",
+    });
+  } catch (error) {
+    // handle errors
+    next(error);
   }
 }
+

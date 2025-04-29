@@ -1,10 +1,17 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  signUpStart,
+  signUpSuccess,
+  signUpFailure,
+} from "../redux/user/userSlice";
 
 const Signup = () => {
   const [formdata, setFormdata] = useState({});
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+
+  const { isLoading:loading, error } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
   const navigate = useNavigate();
 
@@ -15,8 +22,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true);
-      setError(null);
+      dispatch(signUpStart());
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: {
@@ -25,16 +31,14 @@ const Signup = () => {
         body: JSON.stringify(formdata),
       });
       const data = await res.json();
-      setLoading(false);
       if (data.success === false) {
-        setError("Something went wrong. Please try again.");
+        dispatch(signUpFailure(data));
         return;
       }
+      dispatch(signUpSuccess(data));
       navigate("/sign-in");
-      
     } catch (error) {
-      setLoading(false);
-      setError("Something went wrong. Please try again later.");
+      dispatch(signUpFailure(error));
     }
 
     // setFormdata({});
@@ -90,7 +94,7 @@ const Signup = () => {
       </div>
       {error && (
         <div className="bg-red-100 text-red-700 p-3 rounded-lg my-4">
-          {error}
+          {error.message}
         </div>
       )}
     </div>

@@ -1,10 +1,17 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  loginStart,
+  loginSuccess,
+  loginFailure,
+} from "../redux/user/userSlice";
 
 const Signup = () => {
   const [formdata, setFormdata] = useState({});
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+
+  const { isLoading: loading, error } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
   const navigate = useNavigate();
 
@@ -15,8 +22,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true);
-      setError(null);
+      dispatch(loginStart());
       const res = await fetch("/api/auth/signin", {
         method: "POST",
         headers: {
@@ -25,15 +31,14 @@ const Signup = () => {
         body: JSON.stringify(formdata),
       });
       const data = await res.json();
-      setLoading(false);
       if (data.success === false) {
-        setError("Something went wrong. Please try again.");
+        dispatch(loginFailure(data));
         return;
       }
+      dispatch(loginSuccess(data));
       navigate("/");
     } catch (error) {
-      setLoading(false);
-      setError(error.message);
+      loginFailure(error);
     }
 
     // setFormdata({});
@@ -44,7 +49,6 @@ const Signup = () => {
         Login to your account
       </h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        
         <input
           type="text"
           name="email"
@@ -81,7 +85,9 @@ const Signup = () => {
       </div>
       {error && (
         <div className="bg-red-100 text-red-700 p-3 rounded-lg my-4">
-          {error}
+          {error
+            ? error.message || "Something went wrong"
+            : "Something went wrong"}
         </div>
       )}
     </div>

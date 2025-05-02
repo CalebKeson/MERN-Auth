@@ -6,11 +6,12 @@ import {
   signUpSuccess,
   signUpFailure,
 } from "../redux/user/userSlice";
+import GoogleAuth from "../components/GoogleAuth";
 
 const Signup = () => {
   const [formdata, setFormdata] = useState({});
 
-  const { isLoading:loading, error } = useSelector((state) => state.user);
+  const { isLoading: loading, error } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   const navigate = useNavigate();
@@ -83,15 +84,36 @@ const Signup = () => {
         >
           {loading ? "Loading..." : "Sign Up"}
         </button>
+        <GoogleAuth />
+        <div className="flex items-center gap-2 mt-2">
+          <input type="checkbox" id="termsandconditions" />
+          <label htmlFor="remember">
+            I agree to the{" "}
+            <Link to="/terms-and-conditions">
+              <span className="text-blue-500 cursor-pointer hover:text-blue-800">
+                Terms and Conditions
+              </span>
+            </Link>{" "}
+            and{" "}
+            <Link to="/privacy-policy">
+              <span className="text-blue-500 cursor-pointer hover:text-blue-800">
+                Privacy Policy
+              </span>
+            </Link>
+          </label>
+        </div>
       </form>
-      <div className="flex gap-2 my-4">
-        <p>Already have account? </p>
-        <Link to="/sign-in">
-          <span className="text-blue-500 cursor-pointer hover:text-blue-800">
-            Sign In
-          </span>
-        </Link>
-      </div>
+      
+        <div className="flex gap-2 my-4">
+          <p>Already have account? </p>
+          <Link to="/sign-in">
+            <span className="text-blue-500 cursor-pointer hover:text-blue-800">
+              Sign In
+            </span>
+          </Link>
+        </div>
+        
+      
       {error && (
         <div className="bg-red-100 text-red-700 p-3 rounded-lg my-4">
           {error.message}

@@ -5,6 +5,8 @@ import Profile from "./pages/Profile";
 import Signin from "./pages/SignIn";
 import Header from "./components/Header";
 import Signup from "./pages/SignUp";
+import ForgotPasswordEmail from "./pages/ForgotPasswordEmail";
+import NewPassword from "./pages/NewPassword";
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
         <Route path="/sign-up" element={<Signup />} />
         <Route path="/sign-in" element={<Signin />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/forgot-password" element={<ForgotPasswordEmail />}/>
+        <Route path="/new-password" element={<NewPassword />}/>
       </Routes>
     </BrowserRouter>
   );

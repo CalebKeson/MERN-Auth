@@ -27,7 +27,7 @@ const GoogleAuth = () => {
           })
         })
         const data = await res.json()
-        console.log("Google login data", data)
+        
         dispatch(loginSuccess(data))
         navigate("/")
       } catch (err) {

@@ -9,6 +9,7 @@ import {
   forgotPasswordCode,
   verifyForgotPasswordCode,
   changePassword,
+  googleAuth,
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
@@ -23,5 +24,7 @@ router.patch("/verify-code", verifyCode);
 router.patch("/send-forgot-password-code", forgotPasswordCode);
 router.patch("/verify-forgot-password-code", verifyForgotPasswordCode);
 router.patch("/change-password", changePassword);
+
+router.post("/google", googleAuth)
 
 export default router;

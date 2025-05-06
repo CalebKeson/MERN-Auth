@@ -13,7 +13,7 @@ import jwt from "jsonwebtoken";
 
 export const test = (req, res) => {
   res.json({ message: "Welcome to MERN Authentication API!!" });
-};
+}; 
 
 export const signup = async (req, res, next) => {
   // signup logic
@@ -127,6 +127,7 @@ export const signin = async (req, res, next) => {
           username: existingUser.username,
           email: existingUser.email,
           isVerified: existingUser.isVerified,
+          profilePic: existingUser.profilePicture,
         },
       });
   } catch (error) {
@@ -468,5 +469,108 @@ export const changePassword = async ( req, res, next ) => {
     // handle errors
     next(error);
   }
+}
+
+export const googleAuth = async ( req, res, next ) => {
+  const { username, email, photo } = req.body;
+
+  try {
+    // check if user exists
+    const existingUser = await User.findOne({ email });
+
+    // if user exists, sign in the user
+    if (existingUser) {
+      // create a token
+      const token = jwt.sign(
+        {
+          id: existingUser._id,
+          email: existingUser.email,
+          isVerified: existingUser.isVerified,
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "1d",
+        }
+      );
+
+      // create a cookie
+      // set the cookie in the response
+      return res.status(200)
+        .cookie("Authorization", `Bearer ${token}`, {
+          httpOnly: process.env.NODE_ENV === "production",
+          secure: process.env.NODE_ENV === "production",
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day
+        })
+        .json({
+          success: true,
+          message: "User logged in successfully!",
+          user: {
+            id: existingUser._id,
+            username: existingUser.username,
+            email: existingUser.email,
+            isVerified: existingUser.isVerified,
+            profilePic: existingUser.profilePicture,
+          },
+        });
+    } else {
+      // generate a password
+      const generatePassword = Math.random().toString(36).slice(-8); // generate a random password
+
+      // hash the password
+      const hashedPassword = doHash(generatePassword, 10);
+      // create a new user
+      const newUser = new User({
+        username: username.split(" ").join("").toLowerCase() + Math.random().toString(36).slice(-8),
+        password: hashedPassword,
+        email,
+        profilePicture: photo,
+      });
+
+      // save the user to the database
+      const result = await newUser.save();
+
+      // make the password undefined before sending a response
+      result.password = undefined;
+
+      // create a token
+      const token = jwt.sign(
+        {
+          id: result._id,
+          email: result.email,
+          isVerified: result.isVerified,
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "1d",
+        }
+      );
+
+      // create a cookie
+      // set the cookie in the response
+      return res.status(201)
+        .cookie("Authorization", `Bearer ${token}`, {
+          httpOnly: process.env.NODE_ENV === "production",
+          secure: process.env.NODE_ENV === "production",
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day
+        })
+        .json({
+          success: true,
+          message: "User created successfully!",
+          user: {
+            id: result._id,
+            username: result.username,
+            email: result.email,
+            isVerified: result.isVerified,
+            profilePic: result.profilePicture,
+          },
+        });
+    }
+    
+  } catch (error) {
+    // handle errors
+    next(error);
+       
+  }
+  
 }
 

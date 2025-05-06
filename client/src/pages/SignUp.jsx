@@ -46,9 +46,15 @@ const Signup = () => {
   };
   return (
     <div className="max-w-lg mx-auto p-8">
-      <h1 className="text-3xl font-semibold text-center my-10">
+      <div className="flex flex-col gap-2 my-8">
+      <h1 className="text-3xl font-semibold text-center">
         Create Account
       </h1>
+      <p className="text-sm text-center opacity-80">
+        Get started with your free account 
+      </p>
+      </div>
+      
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="text"
@@ -103,17 +109,16 @@ const Signup = () => {
           </label>
         </div>
       </form>
-      
-        <div className="flex gap-2 my-4">
-          <p>Already have account? </p>
-          <Link to="/sign-in">
-            <span className="text-blue-500 cursor-pointer hover:text-blue-800">
-              Sign In
-            </span>
-          </Link>
-        </div>
-        
-      
+
+      <div className="flex gap-2 my-4">
+        <p>Already have account? </p>
+        <Link to="/sign-in">
+          <span className="text-blue-500 cursor-pointer hover:text-blue-800">
+            Sign In
+          </span>
+        </Link>
+      </div>
+
       {error && (
         <div className="bg-red-100 text-red-700 p-3 rounded-lg my-4">
           {error.message}

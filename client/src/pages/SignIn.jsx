@@ -46,7 +46,14 @@ const Signup = () => {
   };
   return (
     <div className="max-w-lg mx-auto p-8">
-      <h1 className="text-3xl font-semibold text-center my-10">Welcome back</h1>
+      <div className="flex flex-col gap-2 my-8">
+      <h1 className="text-3xl font-semibold text-center">
+        Welcome back
+      </h1>
+      <p className="text-sm text-center opacity-80">
+        Sign in to your account to continue 
+      </p>
+      </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="text"
